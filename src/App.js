@@ -1,16 +1,21 @@
 import React, {Component} from 'react';
-import Data from './playground';
+
+import Button from './components/button';
 
 import './App.css';
 
 class App extends Component {
     render() {
         return (
-            <div className="App">
-                <header className="App-header">
-                    Number: {Data.cardsNumber}
-                </header>
-            </div>
+            <main className='has-background-info'>
+                <div className="hero is-large has-text-centered">
+                    <div className="hero-body">
+                        <div className="container">
+                            <Button>Do Nothing</Button>
+                        </div>
+                    </div>
+                </div>
+            </main>
         );
     }
 }
