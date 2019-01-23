@@ -1,0 +1,55 @@
+@import "../variables";
+
+/* Card
+---------------------------------------------------------------------------------- */
+
+/* Main
+-------------------------------------------------- */
+
+.card {
+  display: inline-block;
+
+  width: calc(64px + 10vh);
+  height: calc(64px + 10vh);
+  max-height: 128px;
+  max-width: 128px;
+  padding: 1vh;
+  margin: 1vh;
+
+  border: 1px solid $color-shade;
+  border-radius: 3px;
+
+  transition: all .25s ease-out;
+  opacity: 1;
+
+  &.card__hl {
+    box-shadow: 0 2px 20px -2px $color-acc;
+  }
+
+  &.card__selected {
+    border-color: $color-add;
+  }
+
+  &.card__removed {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-50%);
+  }
+}
+
+/* /Main
+-------------------------------------------------- */
+
+
+/* Back
+-------------------------------------------------- */
+
+.back {
+  background: $color-prime;
+}
+
+/* /Back
+-------------------------------------------------- */
+
+/* /Card
+---------------------------------------------------------------------------------- */

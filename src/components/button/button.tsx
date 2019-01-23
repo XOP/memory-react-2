@@ -1,9 +1,9 @@
-import { MouseEvent, Component } from 'react';
 import React from 'react';
+import { MouseEvent, Component } from 'react';
 
 import cls from 'classnames';
 
-export interface Props {
+interface Props {
     children: any;
     className?: string;
     onClick?(e: MouseEvent<HTMLElement>): void;
