@@ -1,17 +1,25 @@
 import React from 'react';
-import { MouseEvent, Component } from 'react';
+import { Component } from 'react';
 
 import cls from 'classnames';
 import styles from './card.module.scss';
 
+interface ClickProps {
+    index: number | string;
+    isSelected: boolean;
+}
+
 interface Props {
     children?: string;
     imageSrc?: string;
-    onClick?(e: MouseEvent<HTMLElement>): void;
+    onClick?(props: ClickProps): void;
     title?: string;
 
+    id: number | string;
+    index: number | string;
+    isDisabled: boolean;
     isHighlighted: boolean;
-    isRemoved: boolean
+    isRemoved: boolean;
     isSelected: boolean;
 }
 
@@ -21,11 +29,16 @@ class Card extends Component<Props, {}> {
         this.handleClick = this.handleClick.bind(this);
     }
 
-    handleClick(e: MouseEvent<HTMLElement>) {
-        const {onClick} = this.props;
+    handleClick() {
+        if (this.props.isDisabled || this.props.isRemoved) {
+            return false;
+        }
 
-        if (onClick) {
-            onClick(e);
+        if (this.props.onClick) {
+            this.props.onClick({
+                index: this.props.index,
+                isSelected: !this.props.isSelected
+            });
         }
     };
 
@@ -68,7 +81,8 @@ class Card extends Component<Props, {}> {
     static defaultProps = {
         isHighlighted: false,
         isRemoved: false,
-        isSelected: false
+        isSelected: false,
+        isDisabled: false
     };
 }
 
