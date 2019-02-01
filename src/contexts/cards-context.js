@@ -35,10 +35,9 @@ export class CardsProvider extends React.Component {
 
         cards: [],
         pickedCardsIndexes: [],
-        pickedCardsIds: [],
         isPickAvailable: true,
-
         removedCardsIds: [],
+
         hintsLeft: 0,
         moves: 0
     };
@@ -62,6 +61,22 @@ export class CardsProvider extends React.Component {
         } else {
             return MATCH_ID_NO_MATCH;
         }
+    };
+
+    /**
+     * Retrieves unpicked cards
+     * @return array
+     */
+    getCardsLeft = () => {
+        return this.state.cards.filter(item => this.state.removedCardsIds.indexOf(item.id) === -1);
+    };
+
+    /**
+     * Retrieves number of unpicked cards ids
+     * @return array
+     */
+    getIdsLeft = () => {
+        return _uniq(this.getCardsLeft().map(item => item.id));
     };
 
     /**
@@ -141,14 +156,15 @@ export class CardsProvider extends React.Component {
      * @return void
      */
     removeCards = (id) => {
-        if (!id) {
+        if (id === undefined) {
             // if no id provided
             // remove all cards
             this.setState({
                 cards: this.state.cards.map(item => ({
                     ...item,
                     isRemoved: true
-                }))
+                })),
+                removedCardsIds: []
             });
         } else {
             // otherwise remove
@@ -163,7 +179,8 @@ export class CardsProvider extends React.Component {
                     } else {
                         return item;
                     }
-                })
+                }),
+                removedCardsIds: this.state.removedCardsIds.concat(id)
             });
         }
 
@@ -194,9 +211,10 @@ export class CardsProvider extends React.Component {
                     ...this.state,
                     initCards: this.initCards,
                     pickCard: this.pickCard,
-                    getMatchId: this.getMatchId,
                     removeCards: this.removeCards,
                     resetPicks: this.resetPicks,
+                    getMatchId: this.getMatchId,
+                    getIdsLeft: this.getIdsLeft,
                     setPickAvailable: this.setPickAvailable
                 }}
             >

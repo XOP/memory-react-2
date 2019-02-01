@@ -2,26 +2,38 @@ import React, {Component} from 'react';
 
 import Button from '../button';
 import Card from '../card';
+import Splash from '../splash';
+
+import resources from '../../resources';
 
 import {
     CONFIG_CLONES,
-    CONFIG_PICK_DURATION
+    CONFIG_PICK_DURATION,
+    CONFIG_RESET_DURATION
 } from '../../constants';
 
 import { MATCH_ID_NO_MATCH } from '../../contexts/cards-context';
 
 import './app.css';
 
+export const GAME_STATE = {
+    start: 0,
+    progress: 1,
+    over: 2
+};
+
 class App extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-
+            gameState: GAME_STATE.start,
+            isLastMove: false
         };
 
-        this.resetCards = this.resetCards.bind(this);
         this.handleCardPick = this.handleCardPick.bind(this);
+        this.handleGameStart = this.handleGameStart.bind(this);
+        this.handleGameReset = this.handleGameReset.bind(this);
     }
 
     componentDidMount() {
@@ -35,6 +47,25 @@ class App extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
+        const leftToWin = this.props.getIdsLeft().length;
+
+        if (leftToWin === 0 && !this.state.isLastMove) {
+            this.props.setPickAvailable(false);
+            this.setState({
+                isLastMove: true
+            });
+
+            setTimeout(() => {
+                this.setState({
+                    gameState: GAME_STATE.over
+                });
+
+                this.props.setPickAvailable(true);
+            }, CONFIG_PICK_DURATION);
+
+            return;
+        }
+
         if (this.props.pickedCardsIndexes.length !== prevProps.pickedCardsIndexes.length) {
             const matchId = this.props.getMatchId();
 
@@ -56,8 +87,26 @@ class App extends Component {
         }
     }
 
-    resetCards() {
+    handleGameStart() {
+        this.setState({
+            gameState: GAME_STATE.progress,
+            isLastMove: false
+        });
+
         this.props.initCards();
+    }
+
+    handleGameReset() {
+        this.props.removeCards();
+
+        setTimeout(() => {
+            this.props.initCards();
+
+            // this.setState({
+            //     failedMatchClicks: 0,
+            //     isGameLastMove: false
+            // });
+        }, CONFIG_RESET_DURATION);
     }
 
     handleCardPick({ index, isSelected }) {
@@ -83,6 +132,79 @@ class App extends Component {
         );
     }
 
+    renderStates() {
+        // eslint-disable-next-line default-case
+        switch(this.state.gameState) {
+            case GAME_STATE.start:
+                return (
+                    <section>
+                        <Splash
+                            heading={resources.start.heading}
+                        >
+                            <Button
+                                size="large"
+                                mode="primary"
+                                onClick={this.handleGameStart}
+                            >
+                                {resources.controls.start}
+                            </Button>
+                        </Splash>
+                    </section>
+                );
+
+            case GAME_STATE.progress:
+                return (
+                    <section>
+                        <section className="has-text-centered">
+                            { this.renderCards() }
+                        </section>
+
+                        <br/>
+
+                        <section className="box has-text-centered">
+                            {
+                                // this.state.failedMatchClicks >= CONFIG_RESET_CLICKS &&
+                                <Button mode="warning" size="medium" onClick={this.handleGameReset}>
+                                    {resources.controls.restart}
+                                </Button>
+                            }
+                            <span>&nbsp;</span>
+                            {
+                                // Boolean(this.props.hintsLeft) &&
+                                // <Button className="is-info" size="medium" onClick={this.handleShowHint}>
+                                //     {resources.controls.hint}
+                                //     <span>&nbsp;</span>
+                                //     <span className="tag is-white">{ this.props.hintsLeft }</span>
+                                // </Button>
+                            }
+                        </section>
+                    </section>
+                );
+
+            case GAME_STATE.over:
+                return (
+                    <section>
+                        <Splash
+                            heading={resources.result.heading}
+                        >
+                            <div className="content is-large">
+                                <div>{resources.result.moves}: {-1}</div>
+                                <div>{resources.result.hints}: {-1}</div>
+                            </div>
+                            <br/>
+                            <Button
+                                size="large"
+                                mode="primary"
+                                onClick={this.handleGameStart}
+                            >
+                                {resources.controls.retry}
+                            </Button>
+                        </Splash>
+                    </section>
+                );
+        }
+    }
+
     render() {
         return (
             <main className='has-background-info'>
@@ -91,12 +213,34 @@ class App extends Component {
                     <div className="section">
                         <div className="columns">
                             <div className="column is-8 is-offset-2">
-                                {this.renderCards()}
+                                {this.renderStates()}
+                            </div>
+                            <div className="column is-2">
+                                {
+                                    this.state.gameState === GAME_STATE.progress &&
+                                    <section>
+                                        <h2 className="title is-3 has-text-centered">
+                                            {resources.score.heading}
+                                        </h2>
+                                        <div className="box">
+                                            <table>
+                                                <tbody>
+                                                <tr>
+                                                    <td>{resources.score.moves}</td>
+                                                    <td className="has-text-right">{ -1 }</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{resources.score.lastGame}</td>
+                                                    <td className="has-text-right">{ -1 }</td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </section>
+                                }
                             </div>
                         </div>
                     </div>
-
-                    <Button onClick={this.props.initCards}>Reset Cards</Button>
                 </div>
 
             </main>
