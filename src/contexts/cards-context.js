@@ -123,6 +123,17 @@ export class CardsProvider extends React.Component {
      * @return void
      */
     pickCard = (index, isSelected) => {
+        if (index === undefined && isSelected === undefined) {
+            this.setState({
+                cards: this.state.cards.map(item => ({
+                    ...item,
+                    isSelected: true
+                }))
+            });
+
+            return;
+        }
+
         this.setState({
 
             // toggle select the card

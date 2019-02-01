@@ -9,7 +9,8 @@ import resources from '../../resources';
 import {
     CONFIG_CLONES,
     CONFIG_PICK_DURATION,
-    CONFIG_RESET_DURATION
+    CONFIG_RESET_DURATION,
+    CONFIG_WIN_THRESHOLD
 } from '../../constants';
 
 import { MATCH_ID_NO_MATCH } from '../../contexts/cards-context';
@@ -49,19 +50,27 @@ class App extends Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
         const leftToWin = this.props.getIdsLeft().length;
 
-        if (leftToWin === 0 && !this.state.isLastMove) {
+        if (leftToWin === CONFIG_WIN_THRESHOLD && !this.state.isLastMove) {
             this.props.setPickAvailable(false);
             this.setState({
                 isLastMove: true
             });
 
             setTimeout(() => {
-                this.setState({
-                    gameState: GAME_STATE.over
-                });
+                this.props.pickCard();
 
-                this.props.setPickAvailable(true);
-            }, CONFIG_PICK_DURATION);
+                setTimeout(() => {
+                    this.props.removeCards();
+
+                    setTimeout(() => {
+                        this.setState({
+                            gameState: GAME_STATE.over
+                        });
+
+                        this.props.setPickAvailable(true);
+                    }, CONFIG_PICK_DURATION);
+                }, CONFIG_PICK_DURATION/2);
+            }, CONFIG_PICK_DURATION/2);
 
             return;
         }
