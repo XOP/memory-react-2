@@ -3,7 +3,11 @@ import React, {Component} from 'react';
 import Button from '../button';
 import Card from '../card';
 
-import { CONFIG_CLONES } from '../../constants';
+import {
+    CONFIG_CLONES,
+    CONFIG_PICK_DURATION
+} from '../../constants';
+
 import { MATCH_ID_NO_MATCH } from '../../contexts/cards-context';
 
 import './app.css';
@@ -35,14 +39,18 @@ class App extends Component {
             const matchId = this.props.getMatchId();
 
             if (this.props.pickedCardsIndexes.length === CONFIG_CLONES) {
-                if (matchId === -1) {
+                this.props.setPickAvailable(false);
+
+                if (matchId === MATCH_ID_NO_MATCH) {
                     setTimeout(() => {
                         this.props.resetPicks();
-                    }, 1000);
+                        this.props.setPickAvailable(true);
+                    }, CONFIG_PICK_DURATION);
                 } else if (matchId >= 0) {
                     setTimeout(() => {
                         this.props.removeCards(matchId);
-                    }, 1000);
+                        this.props.setPickAvailable(true);
+                    }, CONFIG_PICK_DURATION);
                 }
             }
         }
@@ -56,7 +64,6 @@ class App extends Component {
         this.props.pickCard(index, isSelected);
     }
 
-    // isDisabled={!isPickAvailable}
     renderCards() {
         return (
             this.props.cards.map((card, idx) => (
@@ -67,6 +74,7 @@ class App extends Component {
                     isHighlighted={card.isHighlighted}
                     isRemoved={card.isRemoved}
                     isSelected={card.isSelected}
+                    isDisabled={!this.props.isPickAvailable}
                     onClick={this.handleCardPick}
                 >
                     {card.content}

@@ -34,6 +34,10 @@ class Card extends Component<Props, {}> {
             return false;
         }
 
+        if (this.props.isSelected === true) {
+            return false;
+        }
+
         if (this.props.onClick) {
             this.props.onClick({
                 index: this.props.index,

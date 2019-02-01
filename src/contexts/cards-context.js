@@ -36,9 +36,9 @@ export class CardsProvider extends React.Component {
         cards: [],
         pickedCardsIndexes: [],
         pickedCardsIds: [],
+        isPickAvailable: true,
 
         removedCardsIds: [],
-        isPickAvailable: true,
         hintsLeft: 0,
         moves: 0
     };
@@ -62,6 +62,17 @@ export class CardsProvider extends React.Component {
         } else {
             return MATCH_ID_NO_MATCH;
         }
+    };
+
+    /**
+     * Allows or blocks card pick
+     * @param isAvailable
+     * @return void
+     */
+    setPickAvailable = (isAvailable) => {
+        this.setState({
+            isPickAvailable: isAvailable
+        });
     };
 
     /**
@@ -185,7 +196,8 @@ export class CardsProvider extends React.Component {
                     pickCard: this.pickCard,
                     getMatchId: this.getMatchId,
                     removeCards: this.removeCards,
-                    resetPicks: this.resetPicks
+                    resetPicks: this.resetPicks,
+                    setPickAvailable: this.setPickAvailable
                 }}
             >
                 {this.props.children}

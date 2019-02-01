@@ -5,15 +5,9 @@ import { CardsContext } from '../../contexts/cards-context';
 
 export default props => (
     <CardsContext.Consumer>
-        {({
-              initCards,
-              pickCard,
-              ...rest
-        }) => (
+        {rest => (
             <App
                 {...props}
-                initCards={initCards}
-                pickCard={pickCard}
                 {...rest}
             />
         )}
