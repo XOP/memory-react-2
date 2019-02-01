@@ -112,7 +112,8 @@ export class CardsProvider extends React.Component {
         const newCards = arrayShuffle(cardsWithIndex);
 
         this.setState({
-            cards: newCards
+            cards: newCards,
+            moves: 0
         });
 
         return newCards;
@@ -123,7 +124,7 @@ export class CardsProvider extends React.Component {
      * @return void
      */
     pickCard = (index, isSelected) => {
-        if (index === undefined && isSelected === undefined) {
+        if (index === undefined) {
             this.setState({
                 cards: this.state.cards.map(item => ({
                     ...item,
@@ -156,6 +157,14 @@ export class CardsProvider extends React.Component {
                     return this.state.pickedCardsIndexes.concat(index);
                 } else {
                     return this.state.pickedCardsIndexes.filter(item => item !== index);
+                }
+            })(),
+
+            moves: (() => {
+                if (this.state.pickedCardsIndexes.length === 0) {
+                    return this.state.moves + 1;
+                } else {
+                    return this.state.moves
                 }
             })()
         });

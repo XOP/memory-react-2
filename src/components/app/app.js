@@ -29,7 +29,8 @@ class App extends Component {
 
         this.state = {
             gameState: GAME_STATE.start,
-            isLastMove: false
+            isLastMove: false,
+            lastGameMoves: 0
         };
 
         this.handleCardPick = this.handleCardPick.bind(this);
@@ -64,7 +65,8 @@ class App extends Component {
 
                     setTimeout(() => {
                         this.setState({
-                            gameState: GAME_STATE.over
+                            gameState: GAME_STATE.over,
+                            lastGameMoves: this.props.moves
                         });
 
                         this.props.setPickAvailable(true);
@@ -111,10 +113,9 @@ class App extends Component {
         setTimeout(() => {
             this.props.initCards();
 
-            // this.setState({
-            //     failedMatchClicks: 0,
-            //     isGameLastMove: false
-            // });
+            this.setState({
+                isLastMove: false
+            });
         }, CONFIG_RESET_DURATION);
     }
 
@@ -197,7 +198,7 @@ class App extends Component {
                             heading={resources.result.heading}
                         >
                             <div className="content is-large">
-                                <div>{resources.result.moves}: {-1}</div>
+                                <div>{resources.result.moves}: { this.props.moves }</div>
                                 <div>{resources.result.hints}: {-1}</div>
                             </div>
                             <br/>
@@ -216,7 +217,7 @@ class App extends Component {
 
     render() {
         return (
-            <main className='has-background-info'>
+            <main>
 
                 <div className="container has-text-centered">
                     <div className="section">
@@ -236,11 +237,11 @@ class App extends Component {
                                                 <tbody>
                                                 <tr>
                                                     <td>{resources.score.moves}</td>
-                                                    <td className="has-text-right">{ -1 }</td>
+                                                    <td className="has-text-right">{ this.props.moves }</td>
                                                 </tr>
                                                 <tr>
                                                     <td>{resources.score.lastGame}</td>
-                                                    <td className="has-text-right">{ -1 }</td>
+                                                    <td className="has-text-right">{ this.state.lastGameMoves }</td>
                                                 </tr>
                                                 </tbody>
                                             </table>
