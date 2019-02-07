@@ -5,7 +5,7 @@ import _uniq from 'lodash/uniq';
 
 import {
     CONFIG_CLONES,
-    CONFIG_HINTS
+    CONFIG_HINTS, CONFIG_IMAGES
 } from '../constants';
 
 export const MATCH_ID_NO_MATCH = -1;
@@ -15,26 +15,8 @@ export const CardsContext = React.createContext(undefined);
 
 export class CardsProvider extends React.Component {
     state = {
-        cardsData: [
-            {
-                content: 'https://picsum.photos/256?image=1062'
-            },
-            {
-                content: 'https://picsum.photos/256?image=1042'
-            },
-            {
-                content: 'https://picsum.photos/256?image=1070'
-            },
-            {
-                content: 'https://picsum.photos/256?image=1074'
-            },
-            {
-                content: 'https://picsum.photos/256?image=1084'
-            },
-            {
-                content: 'https://picsum.photos/256?image=1048'
-            }
-        ],
+        imageUrls: CONFIG_IMAGES,
+        cardsData: [],
 
         cards: [],
         pickedCardsIndexes: [],
@@ -44,6 +26,17 @@ export class CardsProvider extends React.Component {
 
         hintsLeft: CONFIG_HINTS,
         movesMade: 0
+    };
+
+    /**
+     * Processes image url array and updates state
+     * with proper cards objects
+     * @return void
+     */
+    setCardsData = () => {
+        this.setState({
+            cardsData: this.state.imageUrls.map(item => ({content: item}))
+        })
     };
 
     /**
@@ -100,7 +93,7 @@ export class CardsProvider extends React.Component {
      */
     initGame = () => {
         this.setState({
-            cards: this.newCards(),
+            cards: this.setCards(),
             movesMade: 0,
             hintsLeft: CONFIG_HINTS
         });
@@ -111,7 +104,9 @@ export class CardsProvider extends React.Component {
      * @return array
      * @default []
      */
-    newCards = () => {
+    setCards = () => {
+        this.setCardsData();
+
         const cards = this.state.cardsData;
 
         // {...} -> {..., id}
