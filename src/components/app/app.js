@@ -8,9 +8,11 @@ import resources from '../../resources';
 
 import {
     CONFIG_CLONES,
+    CONFIG_WIN_THRESHOLD,
     CONFIG_PICK_DURATION,
     CONFIG_RESET_DURATION,
-    CONFIG_WIN_THRESHOLD
+    CONFIG_HINT_DURATION,
+    CONFIG_FAIL_PICKS
 } from '../../constants';
 
 import { MATCH_ID_NO_MATCH } from '../../contexts/cards-context';
@@ -30,22 +32,29 @@ class App extends Component {
         this.state = {
             gameState: GAME_STATE.start,
             isLastMove: false,
-            lastGameMoves: 0
+            lastGameMoves: 0,
+            hintsUsed: 0,
+            failPicks: 0
         };
 
         this.handleCardPick = this.handleCardPick.bind(this);
+        this.handleShowHint = this.handleShowHint.bind(this);
         this.handleGameStart = this.handleGameStart.bind(this);
         this.handleGameReset = this.handleGameReset.bind(this);
+        this.initGame = this.initGame.bind(this);
     }
 
     componentDidMount() {
-        this.props.cards.map(card => {
+        const images = [];
+
+        for (let i = 0; i < this.props.cards.length; i++) {
             const img = new Image();
 
-            img.src = card.content;
-        });
+            img.src = this.props.cards[i].content;
+            images.push(img);
+        }
 
-        this.props.initCards();
+        this.props.initGame();
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -66,7 +75,7 @@ class App extends Component {
                     setTimeout(() => {
                         this.setState({
                             gameState: GAME_STATE.over,
-                            lastGameMoves: this.props.moves
+                            lastGameMoves: this.props.movesMade
                         });
 
                         this.props.setPickAvailable(true);
@@ -84,6 +93,10 @@ class App extends Component {
                 this.props.setPickAvailable(false);
 
                 if (matchId === MATCH_ID_NO_MATCH) {
+                    this.setState({
+                        failPicks: this.state.failPicks + 1
+                    });
+
                     setTimeout(() => {
                         this.props.resetPicks();
                         this.props.setPickAvailable(true);
@@ -93,34 +106,62 @@ class App extends Component {
                         this.props.removeCards(matchId);
                         this.props.setPickAvailable(true);
                     }, CONFIG_PICK_DURATION);
+
+                    this.setState({
+                        failPicks: 0
+                    });
                 }
             }
         }
     }
 
+    initGame() {
+        this.setState({
+            isLastMove: false,
+            hintsUsed: 0,
+            failPicks: 0
+        });
+
+        this.props.initGame();
+    }
+
     handleGameStart() {
         this.setState({
             gameState: GAME_STATE.progress,
-            isLastMove: false
         });
 
-        this.props.initCards();
+        this.initGame();
+        this.props.initGame();
     }
 
     handleGameReset() {
         this.props.removeCards();
 
         setTimeout(() => {
-            this.props.initCards();
-
-            this.setState({
-                isLastMove: false
-            });
+            this.initGame();
         }, CONFIG_RESET_DURATION);
     }
 
     handleCardPick({ index, isSelected }) {
         this.props.pickCard(index, isSelected);
+    }
+
+    handleShowHint() {
+        if (!this.props.hintsLeft) return;
+
+        const leftIds = this.props.getIdsLeft();
+        const leftToWin = leftIds.length;
+        const randomId = leftIds[~~(Math.random() * leftToWin)];
+
+        this.props.toggleCardHint(randomId, true);
+
+        setTimeout(() => {
+            this.props.toggleCardHint(randomId, false)
+        }, CONFIG_HINT_DURATION);
+
+        this.setState({
+            hintsUsed: this.state.hintsUsed + 1
+        });
     }
 
     renderCards() {
@@ -142,76 +183,93 @@ class App extends Component {
         );
     }
 
+    renderStateStart() {
+        return (
+            <section>
+                <Splash
+                    heading={resources.start.heading}
+                >
+                    <Button
+                        size="large"
+                        mode="primary"
+                        onClick={this.handleGameStart}
+                    >
+                        {resources.controls.start}
+                    </Button>
+                </Splash>
+            </section>
+        );
+    }
+
+    renderStateProgress() {
+        return (
+            <section>
+                <h2 className="title is-3 has-text-centered">
+                    {resources.heading}
+                </h2>
+
+                <section className="has-text-centered">
+                    { this.renderCards() }
+                </section>
+
+                <br/>
+
+                <section className="box has-text-centered">
+                    {
+                        <Button mode="warning" size="medium" onClick={this.handleGameReset}>
+                            {resources.controls.restart}
+                        </Button>
+                    }
+                    <span>&nbsp;</span>
+                    {
+                        (Boolean(this.props.hintsLeft) && this.state.failPicks >= CONFIG_FAIL_PICKS) &&
+                        <Button className="is-info" size="medium" onClick={this.handleShowHint}>
+                            {resources.controls.hint}
+                            <span>&nbsp;</span>
+                            <span className="tag is-white">{ this.props.hintsLeft }</span>
+                        </Button>
+                    }
+                </section>
+            </section>
+        );
+    }
+
+    renderStateOver() {
+        return (
+            <section>
+                <Splash
+                    heading={resources.result.heading}
+                >
+                    <div className="content is-large">
+                        <div>{resources.result.moves}: { this.props.movesMade }</div>
+                        <div>{resources.result.hints}: { this.state.hintsUsed }</div>
+                    </div>
+                    <br/>
+                    <Button
+                        size="large"
+                        mode="primary"
+                        onClick={this.handleGameStart}
+                    >
+                        {resources.controls.retry}
+                    </Button>
+                </Splash>
+            </section>
+        );
+    }
+
     renderStates() {
-        // eslint-disable-next-line default-case
         switch(this.state.gameState) {
             case GAME_STATE.start:
-                return (
-                    <section>
-                        <Splash
-                            heading={resources.start.heading}
-                        >
-                            <Button
-                                size="large"
-                                mode="primary"
-                                onClick={this.handleGameStart}
-                            >
-                                {resources.controls.start}
-                            </Button>
-                        </Splash>
-                    </section>
-                );
+                return this.renderStateStart();
 
             case GAME_STATE.progress:
-                return (
-                    <section>
-                        <section className="has-text-centered">
-                            { this.renderCards() }
-                        </section>
-
-                        <br/>
-
-                        <section className="box has-text-centered">
-                            {
-                                // this.state.failedMatchClicks >= CONFIG_RESET_CLICKS &&
-                                <Button mode="warning" size="medium" onClick={this.handleGameReset}>
-                                    {resources.controls.restart}
-                                </Button>
-                            }
-                            <span>&nbsp;</span>
-                            {
-                                // Boolean(this.props.hintsLeft) &&
-                                // <Button className="is-info" size="medium" onClick={this.handleShowHint}>
-                                //     {resources.controls.hint}
-                                //     <span>&nbsp;</span>
-                                //     <span className="tag is-white">{ this.props.hintsLeft }</span>
-                                // </Button>
-                            }
-                        </section>
-                    </section>
-                );
+                return this.renderStateProgress();
 
             case GAME_STATE.over:
-                return (
-                    <section>
-                        <Splash
-                            heading={resources.result.heading}
-                        >
-                            <div className="content is-large">
-                                <div>{resources.result.moves}: { this.props.moves }</div>
-                                <div>{resources.result.hints}: {-1}</div>
-                            </div>
-                            <br/>
-                            <Button
-                                size="large"
-                                mode="primary"
-                                onClick={this.handleGameStart}
-                            >
-                                {resources.controls.retry}
-                            </Button>
-                        </Splash>
-                    </section>
-                );
+                return this.renderStateOver();
+
+            default:
+                return this.renderStateStart();
         }
     }
 
@@ -233,11 +291,11 @@ class App extends Component {
                                             {resources.score.heading}
                                         </h2>
                                         <div className="box">
-                                            <table>
+                                            <table className="table is-fullwidth">
                                                 <tbody>
                                                 <tr>
                                                     <td>{resources.score.moves}</td>
-                                                    <td className="has-text-right">{ this.props.moves }</td>
+                                                    <td className="has-text-right">{ this.props.movesMade }</td>
                                                 </tr>
                                                 <tr>
                                                     <td>{resources.score.lastGame}</td>

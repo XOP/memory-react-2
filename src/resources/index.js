@@ -1,6 +1,8 @@
 export default {
     title: 'Memory 2.0',
 
+    heading: 'Game on!',
+
     controls: {
         start: 'Start',
         restart: 'I give up',

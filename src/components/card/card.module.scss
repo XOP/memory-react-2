@@ -9,11 +9,6 @@
 .card {
   display: inline-block;
 
-  width: calc(64px + 10vh);
-  height: calc(64px + 10vh);
-  padding: 1vh;
-  margin: 1vh;
-
   border: 1px solid $color-shade;
   border-radius: 3px;
 
@@ -32,6 +27,20 @@
     opacity: 0;
     visibility: hidden;
     transform: translateY(-50%);
+  }
+
+  @include touch() {
+    width: calc(32px + 10vh);
+    height: calc(32px + 10vh);
+    padding: 1vh;
+    margin: 0.5vh;
+  }
+
+  @include desktop() {
+    width: calc(64px + 10vh);
+    height: calc(64px + 10vh);
+    padding: 1vh;
+    margin: 1vh;
   }
 }
 

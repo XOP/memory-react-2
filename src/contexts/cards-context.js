@@ -3,7 +3,10 @@ import React from 'react';
 import arrayShuffle from 'array-shuffle';
 import _uniq from 'lodash/uniq';
 
-import { CONFIG_CLONES } from '../constants';
+import {
+    CONFIG_CLONES,
+    CONFIG_HINTS
+} from '../constants';
 
 export const MATCH_ID_NO_MATCH = -1;
 export const MATCH_ID_NO_CARDS = -0;
@@ -35,11 +38,12 @@ export class CardsProvider extends React.Component {
 
         cards: [],
         pickedCardsIndexes: [],
-        isPickAvailable: true,
         removedCardsIds: [],
 
-        hintsLeft: 0,
-        moves: 0
+        isPickAvailable: true,
+
+        hintsLeft: CONFIG_HINTS,
+        movesMade: 0
     };
 
     /**
@@ -91,11 +95,23 @@ export class CardsProvider extends React.Component {
     };
 
     /**
+     * High level wrapper that restores init state
+     * @return void
+     */
+    initGame = () => {
+        this.setState({
+            cards: this.newCards(),
+            movesMade: 0,
+            hintsLeft: CONFIG_HINTS
+        });
+    };
+
+    /**
      * Cards reset and shuffle
      * @return array
      * @default []
      */
-    initCards = () => {
+    newCards = () => {
         const cards = this.state.cardsData;
 
         // {...} -> {..., id}
@@ -109,14 +125,7 @@ export class CardsProvider extends React.Component {
         // {...} -> {..., index}
         const cardsWithIndex = cardsCloned.map((card, index) => Object.assign({}, card, { index }));
 
-        const newCards = arrayShuffle(cardsWithIndex);
-
-        this.setState({
-            cards: newCards,
-            moves: 0
-        });
-
-        return newCards;
+        return arrayShuffle(cardsWithIndex);
     };
 
     /**
@@ -160,14 +169,45 @@ export class CardsProvider extends React.Component {
                 }
             })(),
 
-            moves: (() => {
+            movesMade: (() => {
                 if (this.state.pickedCardsIndexes.length === 0) {
-                    return this.state.moves + 1;
+                    return this.state.movesMade + 1;
                 } else {
-                    return this.state.moves
+                    return this.state.movesMade
                 }
             })()
         });
+    };
+
+    /**
+     *
+     * @param id
+     * @param state
+     * @return void
+     */
+    toggleCardHint = (id, state) => {
+        if (id === undefined) return;
+        if (state === undefined) state = false;
+
+        this.setState({
+            // toggle hint the card
+            cards: this.state.cards.map(item => {
+                if (item.id === id) {
+                    return {
+                        ...item,
+                        isHighlighted: state
+                    }
+                } else {
+                    return item;
+                }
+            })
+        });
+
+        if (state) {
+            this.setState({
+                hintsLeft: this.state.hintsLeft - 1
+            });
+        }
     };
 
     /**
@@ -229,12 +269,22 @@ export class CardsProvider extends React.Component {
             <CardsContext.Provider
                 value={{
                     ...this.state,
+
+                    // game handle
+                    initGame: this.initGame,
+
+                    // cards operations
                     initCards: this.initCards,
                     pickCard: this.pickCard,
+                    toggleCardHint: this.toggleCardHint,
                     removeCards: this.removeCards,
                     resetPicks: this.resetPicks,
+
+                    // aux operations
                     getMatchId: this.getMatchId,
                     getIdsLeft: this.getIdsLeft,
+
+                    // extras and ui
                     setPickAvailable: this.setPickAvailable
                 }}
             >
