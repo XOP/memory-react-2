@@ -7,7 +7,8 @@ export default {
         start: 'Start',
         restart: 'I give up',
         retry: 'One more time?',
-        hint: 'Show hint'
+        hint: 'Show hint',
+        menu: 'Back to Menu'
     },
 
     start: {

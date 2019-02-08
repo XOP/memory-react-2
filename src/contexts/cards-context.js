@@ -5,7 +5,7 @@ import _uniq from 'lodash/uniq';
 
 import {
     CONFIG_CLONES,
-    CONFIG_HINTS, CONFIG_IMAGES
+    CONFIG_HINTS
 } from '../constants';
 
 export const MATCH_ID_NO_MATCH = -1;
@@ -15,10 +15,9 @@ export const CardsContext = React.createContext(undefined);
 
 export class CardsProvider extends React.Component {
     state = {
-        imageUrls: CONFIG_IMAGES,
+        cards: [],
         cardsData: [],
 
-        cards: [],
         pickedCardsIndexes: [],
         removedCardsIds: [],
 
@@ -26,17 +25,6 @@ export class CardsProvider extends React.Component {
 
         hintsLeft: CONFIG_HINTS,
         movesMade: 0
-    };
-
-    /**
-     * Processes image url array and updates state
-     * with proper cards objects
-     * @return void
-     */
-    setCardsData = () => {
-        this.setState({
-            cardsData: this.state.imageUrls.map(item => ({content: item}))
-        })
     };
 
     /**
@@ -92,8 +80,9 @@ export class CardsProvider extends React.Component {
      * @return void
      */
     initGame = () => {
+        this.setCards();
+
         this.setState({
-            cards: this.setCards(),
             movesMade: 0,
             hintsLeft: CONFIG_HINTS
         });
@@ -101,13 +90,22 @@ export class CardsProvider extends React.Component {
 
     /**
      * Cards reset and shuffle
-     * @return array
-     * @default []
+     * @param {array} cardsData
      */
-    setCards = () => {
-        this.setCardsData();
+    setCards = (cardsData = []) => {
+        let cards = cardsData;
 
-        const cards = this.state.cardsData;
+        if (!cards.length) {
+            cards = this.state.cardsData;
+
+            if (!cards.length) {
+                return;
+            }
+        } else {
+            this.setState({
+                cardsData
+            });
+        }
 
         // {...} -> {..., id}
         const cardsWithId = cards.map((card, id) => Object.assign({}, card, { id }));
@@ -120,7 +118,9 @@ export class CardsProvider extends React.Component {
         // {...} -> {..., index}
         const cardsWithIndex = cardsCloned.map((card, index) => Object.assign({}, card, { index }));
 
-        return arrayShuffle(cardsWithIndex);
+        this.setState({
+            cards: arrayShuffle(cardsWithIndex)
+        });
     };
 
     /**
@@ -269,7 +269,7 @@ export class CardsProvider extends React.Component {
                     initGame: this.initGame,
 
                     // cards operations
-                    initCards: this.initCards,
+                    setCards: this.setCards,
                     pickCard: this.pickCard,
                     toggleCardHint: this.toggleCardHint,
                     removeCards: this.removeCards,

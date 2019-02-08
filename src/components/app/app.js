@@ -1,5 +1,8 @@
 import React, {Component} from 'react';
 
+import urljoin from 'url-join';
+import localStorage from 'localStorage';
+
 import Button from '../button';
 import Card from '../card';
 import Splash from '../splash';
@@ -8,11 +11,14 @@ import resources from '../../resources';
 
 import {
     CONFIG_CLONES,
+    CONFIG_COUNT,
+    CONFIG_DEFAULT_IMAGES,
     CONFIG_WIN_THRESHOLD,
     CONFIG_PICK_DURATION,
     CONFIG_RESET_DURATION,
     CONFIG_HINT_DURATION,
-    CONFIG_FAIL_PICKS
+    CONFIG_FAIL_PICKS,
+    ENDPOINT_IMAGES
 } from '../../constants';
 
 import { MATCH_ID_NO_MATCH } from '../../contexts/cards-context';
@@ -30,6 +36,7 @@ class App extends Component {
         super(props);
 
         this.state = {
+            isLoading: false,
             gameState: GAME_STATE.start,
             isLastMove: false,
             lastGameMoves: 0,
@@ -41,20 +48,31 @@ class App extends Component {
         this.handleShowHint = this.handleShowHint.bind(this);
         this.handleGameStart = this.handleGameStart.bind(this);
         this.handleGameReset = this.handleGameReset.bind(this);
+        this.handleMenuNav = this.handleMenuNav.bind(this);
+        this.handleImagesRequest = this.handleImagesRequest.bind(this);
         this.initGame = this.initGame.bind(this);
     }
 
     componentDidMount() {
-        const images = [];
+        let imagesData = localStorage.getItem('images') || CONFIG_DEFAULT_IMAGES;
 
-        for (let i = 0; i < this.props.cards.length; i++) {
-            const img = new Image();
-
-            img.src = this.props.cards[i].content;
-            images.push(img);
+        if (typeof imagesData === 'string') {
+            imagesData = JSON.parse(imagesData);
         }
 
+        this.props.setCards(imagesData.map(item => ({...item, content: item })));
         this.props.initGame();
+
+        setTimeout(() => {
+            const images = [];
+
+            for (let i = 0; i < this.props.cards.length; i++) {
+                const img = new Image();
+
+                img.src = this.props.cards[i].content;
+                images.push(img);
+            }
+        }, 0);
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -142,6 +160,12 @@ class App extends Component {
         }, CONFIG_RESET_DURATION);
     }
 
+    handleMenuNav() {
+        this.setState({
+            gameState: GAME_STATE.start
+        });
+    }
+
     handleCardPick({ index, isSelected }) {
         this.props.pickCard(index, isSelected);
     }
@@ -161,6 +185,30 @@ class App extends Component {
 
         this.setState({
             hintsUsed: this.state.hintsUsed + 1
+        });
+    }
+
+    async handleImagesRequest() {
+        this.setState({
+            isLoading: true
+        });
+
+        const requestUrl = urljoin(ENDPOINT_IMAGES, 'images', `?count=${CONFIG_COUNT}`);
+        const images = await fetch(requestUrl, {
+            mode: 'cors'
+        });
+
+        let imagesData = await images.json();
+
+        if (imagesData.length) {
+            imagesData = imagesData.map(item => item.urls.small);
+            localStorage.setItem('images', JSON.stringify(imagesData));
+
+            this.props.setCards(imagesData.map(item => ({ content: item })));
+        }
+
+        this.setState({
+            isLoading: false
         });
     }
 
@@ -189,13 +237,31 @@ class App extends Component {
                 <Splash
                     heading={resources.start.heading}
                 >
-                    <Button
-                        size="large"
-                        mode="primary"
-                        onClick={this.handleGameStart}
-                    >
-                        {resources.controls.start}
-                    </Button>
+
+                    {/* START Menu component */}
+                    <div className="box">
+                        <div className="section">
+                            <h3 className="title is-4">Enhance your game experience</h3>
+                            <Button
+                                size="middle"
+                                onClick={this.handleImagesRequest}
+                            >
+                                Randomize images
+                            </Button>
+                        </div>
+                    </div>
+                    {/* END Menu component */}
+
+                    <div className="section">
+                        <Button
+                            size="large"
+                            mode="primary"
+                            onClick={this.handleGameStart}
+                        >
+                            {resources.controls.start}
+                        </Button>
+                    </div>
+
                 </Splash>
             </section>
         );
@@ -215,20 +281,32 @@ class App extends Component {
                 <br/>
 
                 <section className="box has-text-centered">
-                    {
-                        <Button mode="warning" size="medium" onClick={this.handleGameReset}>
-                            {resources.controls.restart}
-                        </Button>
-                    }
-                    <span>&nbsp;</span>
-                    {
-                        (Boolean(this.props.hintsLeft) && this.state.failPicks >= CONFIG_FAIL_PICKS) &&
-                        <Button className="is-info" size="medium" onClick={this.handleShowHint}>
-                            {resources.controls.hint}
-                            <span>&nbsp;</span>
-                            <span className="tag is-white">{ this.props.hintsLeft }</span>
-                        </Button>
-                    }
+                    <div className="level">
+                        <div className="level-left">
+                            <div className="level-item">
+                                <Button mode="link" size="medium" onClick={this.handleMenuNav}>
+                                    {resources.controls.menu}
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="level-right">
+                            <div className="level-item">
+                                <Button mode="warning" size="medium" onClick={this.handleGameReset}>
+                                    {resources.controls.restart}
+                                </Button>
+                            </div>
+                            {
+                                (Boolean(this.props.hintsLeft) && this.state.failPicks >= CONFIG_FAIL_PICKS) &&
+                                <div className="level-item">
+                                    <Button className="is-info" size="medium" onClick={this.handleShowHint}>
+                                        {resources.controls.hint}
+                                        <span>&nbsp;</span>
+                                        <span className="tag is-white">{this.props.hintsLeft}</span>
+                                    </Button>
+                                </div>
+                            }
+                        </div>
+                    </div>
                 </section>
             </section>
         );
@@ -244,14 +322,23 @@ class App extends Component {
                         <div>{resources.result.moves}: { this.props.movesMade }</div>
                         <div>{resources.result.hints}: { this.state.hintsUsed }</div>
                     </div>
-                    <br/>
-                    <Button
-                        size="large"
-                        mode="primary"
-                        onClick={this.handleGameStart}
-                    >
-                        {resources.controls.retry}
-                    </Button>
+
+                    <div className="section">
+                        <Button
+                            size="large"
+                            mode="primary"
+                            onClick={this.handleGameStart}
+                            disabled={this.state.isLoading}
+                        >
+                            {resources.controls.retry}
+                        </Button>
+                    </div>
+                    <div className="section">
+                        <Button mode="link" size="medium" onClick={this.handleMenuNav}>
+                            {resources.controls.menu}
+                        </Button>
+                    </div>
+
                 </Splash>
             </section>
         );
@@ -279,6 +366,11 @@ class App extends Component {
 
                 <div className="container has-text-centered">
                     <div className="section">
+                        {
+                            this.state.isLoading &&
+                            <progress className="progress is-small is-primary" max="100">50%</progress>
+                        }
+
                         <div className="columns">
                             <div className="column is-8 is-offset-2">
                                 {this.renderStates()}

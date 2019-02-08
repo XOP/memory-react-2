@@ -10,6 +10,7 @@
     "array-shuffle": "^1.0.1",
     "bulma": "^0.7.2",
     "classnames": "^2.2.6",
+    "localStorage": "^1.0.4",
     "lodash": "^4.17.11",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
@@ -33,6 +34,7 @@
   ],
   "devDependencies": {
     "@types/classnames": "^2.2.7",
-    "node-sass": "^4.11.0"
+    "node-sass": "^4.11.0",
+    "url-join": "^4.0.0"
   }
 }
