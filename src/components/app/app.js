@@ -1,11 +1,24 @@
-import React, {Component} from 'react';
+import React, {Fragment, Component} from 'react';
 
 import urljoin from 'url-join';
 import localStorage from 'localStorage';
 
+import Toolbar from '@material-ui/core/Toolbar';
+
+import Grid from '@material-ui/core/Grid';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Link from '@material-ui/core/Link';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Typography from '@material-ui/core/Typography';
+import Fab from '@material-ui/core/Fab';
+
+import { withStyles } from '@material-ui/core/styles';
+
 import Button from '../button';
 import Card from '../card';
-import Splash from '../splash';
+import Panel from '../panel';
+
+import { IconBulb } from '../icons';
 
 import resources from '../../resources';
 
@@ -23,7 +36,66 @@ import {
 
 import { MATCH_ID_NO_MATCH } from '../../contexts/cards-context';
 
-import './app.css';
+const styles = theme => ({
+    p4: {
+        padding: `${theme.spacing.unit * 4}px`
+    },
+
+    container: {
+        height: '100vh',
+        flexWrap: 'nowrap'
+    },
+
+    content: {
+        flex: '1 0 auto'
+    },
+
+    main: {
+        padding: `${theme.spacing.unit * 4}px ${theme.spacing.unit * 4}px`,
+        margin: '0 auto',
+        maxWidth: '800px'
+    },
+
+    toolbar: {
+        padding: `${theme.spacing.unit * 2}px`
+    },
+
+    controls: {
+        justifyItems: 'center',
+        justifyContent: 'space-around'
+    },
+
+    footer: {
+        textAlign: 'center',
+        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 4}px`,
+        background: theme.palette.grey[800],
+        color: theme.palette.grey[100]
+    },
+
+    linkInverted: {
+        color: theme.palette.grey[100],
+        '&:hover': {
+            color: theme.palette.grey[100]
+        }
+    },
+
+    hero: {
+        textAlign: 'center',
+        padding: `${theme.spacing.unit * 4}px 0`
+    },
+
+    heroButton: {
+        marginTop: `${theme.spacing.unit * 4}px`
+    },
+
+    heroImage: {
+        width: '360px',
+        [theme.breakpoints.down('sm')]: {
+            width: '80%'
+        }
+    }
+});
+
 
 export const GAME_STATE = {
     start: 0,
@@ -54,7 +126,7 @@ class App extends Component {
     }
 
     componentDidMount() {
-        let imagesData = localStorage.getItem('images') || CONFIG_DEFAULT_IMAGES;
+        let imagesData = localStorage.getItem('memory2Images') || CONFIG_DEFAULT_IMAGES;
 
         if (typeof imagesData === 'string') {
             imagesData = JSON.parse(imagesData);
@@ -202,7 +274,7 @@ class App extends Component {
 
         if (imagesData.length) {
             imagesData = imagesData.map(item => item.urls.small);
-            localStorage.setItem('images', JSON.stringify(imagesData));
+            localStorage.setItem('memory2Images', JSON.stringify(imagesData));
 
             this.props.setCards(imagesData.map(item => ({ content: item })));
         }
@@ -214,116 +286,141 @@ class App extends Component {
 
     renderCards() {
         return (
-            this.props.cards.map((card, idx) => (
-                <Card
-                    key={idx}
-                    id={card.id}
-                    index={card.index}
-                    isHighlighted={card.isHighlighted}
-                    isRemoved={card.isRemoved}
-                    isSelected={card.isSelected}
-                    isDisabled={!this.props.isPickAvailable}
-                    onClick={this.handleCardPick}
-                >
-                    {card.content}
-                </Card>
-            ))
+            <Grid
+                container
+                justify="space-between"
+                spacing={32}
+            >
+                {
+                    this.props.cards.map((card, idx) => (
+                        <Grid
+                            item
+                        >
+                            <Card
+                                key={idx}
+                                id={card.id}
+                                index={card.index}
+                                isHighlighted={card.isHighlighted}
+                                isRemoved={card.isRemoved}
+                                isSelected={card.isSelected}
+                                isDisabled={!this.props.isPickAvailable}
+                                onClick={this.handleCardPick}
+                            >
+                                {card.content}
+                            </Card>
+                        </Grid>
+                    ))
+                }
+            </Grid>
         );
     }
 
     renderStateStart() {
+        const { classes } = this.props;
+
         return (
             <section>
-                <Splash
-                    heading={resources.start.heading}
-                >
+                <div>
+                    <Typography
+                        align="center"
+                        variant="h2"
+                    >
+                        {resources.start.heading}
 
-                    {/* START Menu component */}
-                    <div className="box">
-                        <div className="section">
-                            <h3 className="title is-4">Enhance your game experience</h3>
-                            <Button
-                                size="middle"
-                                onClick={this.handleImagesRequest}
-                            >
-                                Randomize images
-                            </Button>
+                        <div className={classes.hero}>
+                            <img
+                                className={classes.heroImage}
+                                src="https://upload.wikimedia.org/wikipedia/commons/5/58/Human_brain.png"
+                                alt=""
+                            />
+
+                            <div className={classes.heroButton}>
+                                <Button
+                                    mode="primary"
+                                    size="large"
+                                    onClick={this.handleGameStart}
+                                >
+                                    {resources.controls.start}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                    {/* END Menu component */}
+                    </Typography>
 
-                    <div className="section">
-                        <Button
-                            size="large"
-                            mode="primary"
-                            onClick={this.handleGameStart}
-                        >
-                            {resources.controls.start}
-                        </Button>
-                    </div>
+                </div>
 
-                </Splash>
+                {/* START Menu component */}
+                {/*
+                <Panel>
+                    <Button
+                        size="middle"
+                        onClick={this.handleImagesRequest}
+                    >
+                        Randomize images
+                    </Button>
+                </Panel>
+                */}
+                {/* END Menu component */}
             </section>
         );
     }
 
     renderStateProgress() {
+        const { classes } = this.props;
+
         return (
             <section>
-                <h2 className="title is-3 has-text-centered">
-                    {resources.heading}
-                </h2>
-
-                <section className="has-text-centered">
+                <section>
                     { this.renderCards() }
                 </section>
 
                 <br/>
 
-                <section className="box has-text-centered">
-                    <div className="level">
-                        <div className="level-left">
-                            <div className="level-item">
-                                <Button mode="link" size="medium" onClick={this.handleMenuNav}>
-                                    {resources.controls.menu}
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="level-right">
-                            <div className="level-item">
-                                <Button mode="warning" size="medium" onClick={this.handleGameReset}>
-                                    {resources.controls.restart}
-                                </Button>
-                            </div>
-                            {
-                                (Boolean(this.props.hintsLeft) && this.state.failPicks >= CONFIG_FAIL_PICKS) &&
-                                <div className="level-item">
-                                    <Button className="is-info" size="medium" onClick={this.handleShowHint}>
-                                        {resources.controls.hint}
-                                        <span>&nbsp;</span>
-                                        <span className="tag is-white">{this.props.hintsLeft}</span>
-                                    </Button>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </section>
+                <Panel>
+                    <Toolbar className={classes.controls} variant="dense">
+                        <Button mode="primary" size="medium" onClick={this.handleMenuNav}>
+                            {resources.controls.menu}
+                        </Button>
+                        <Button mode="secondary" size="medium" onClick={this.handleGameReset}>
+                            {resources.controls.restart}
+                        </Button>
+                        {
+                            (Boolean(this.props.hintsLeft) && this.state.failPicks >= CONFIG_FAIL_PICKS) &&
+                            <Button
+                                mode="secondary"
+                                variant="outlined"
+                                size="medium"
+                                onClick={this.handleShowHint}
+                            >
+                                {resources.controls.hint}
+                                <span>&nbsp;</span>
+                                <span className="tag is-white">{this.props.hintsLeft}</span>
+                            </Button>
+                        }
+                    </Toolbar>
+                </Panel>
             </section>
         );
     }
 
     renderStateOver() {
+        const { classes } = this.props;
+
         return (
             <section>
-                <Splash
+                <Panel
                     heading={resources.result.heading}
                 >
-                    <div className="content is-large">
-                        <div>{resources.result.moves}: { this.props.movesMade }</div>
-                        <div>{resources.result.hints}: { this.state.hintsUsed }</div>
+                    <div className={classes.p4}>
+                        <Typography
+                            align="center"
+                            variant="h5"
+                        >
+                            <div>{resources.result.moves}: { this.props.movesMade }</div>
+                            <div>{resources.result.hints}: { this.state.hintsUsed }</div>
+                        </Typography>
                     </div>
 
-                    <div className="section">
+                    <Typography align="center">
                         <Button
                             size="large"
                             mode="primary"
@@ -332,14 +429,16 @@ class App extends Component {
                         >
                             {resources.controls.retry}
                         </Button>
-                    </div>
+                    </Typography>
+
+                    {/*
                     <div className="section">
                         <Button mode="link" size="medium" onClick={this.handleMenuNav}>
                             {resources.controls.menu}
                         </Button>
                     </div>
-
-                </Splash>
+                    */}
+                </Panel>
             </section>
         );
     }
@@ -361,51 +460,70 @@ class App extends Component {
     }
 
     render() {
-        return (
-            <main>
+        const { classes } = this.props;
 
-                <div className="container has-text-centered">
-                    <div className="section">
+        return (
+            <Fragment>
+                <CssBaseline />
+                <Grid
+                    className={classes.container}
+                    container
+                    direction="column"
+                    alignContent="stretch"
+                >
+                    <Grid item>
+                        <Toolbar className={classes.toolbar}>
+                            <Fab color="secondary">
+                                <IconBulb />
+                            </Fab>
+                        </Toolbar>
                         {
                             this.state.isLoading &&
-                            <progress className="progress is-small is-primary" max="100">50%</progress>
+                            <LinearProgress color="secondary"/>
                         }
+                    </Grid>
+                    <Grid item className={classes.content}>
+                        <main className={classes.main}>
+                            {this.renderStates()}
+                        </main>
 
-                        <div className="columns">
-                            <div className="column is-8 is-offset-2">
-                                {this.renderStates()}
-                            </div>
-                            <div className="column is-2">
-                                {
-                                    this.state.gameState === GAME_STATE.progress &&
-                                    <section>
-                                        <h2 className="title is-3 has-text-centered">
-                                            {resources.score.heading}
-                                        </h2>
-                                        <div className="box">
-                                            <table className="table is-fullwidth">
-                                                <tbody>
-                                                <tr>
-                                                    <td>{resources.score.moves}</td>
-                                                    <td className="has-text-right">{ this.props.movesMade }</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>{resources.score.lastGame}</td>
-                                                    <td className="has-text-right">{ this.state.lastGameMoves }</td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </section>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </main>
+                        {/*
+                            this.state.gameState === GAME_STATE.progress &&
+                            <section>
+                                <h2 className="title is-3 has-text-centered">
+                                    {resources.score.heading}
+                                </h2>
+                                <div className="box">
+                                    <table className="table is-fullwidth">
+                                        <tbody>
+                                        <tr>
+                                            <td>{resources.score.moves}</td>
+                                            <td className="has-text-right">{ this.props.movesMade }</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{resources.score.lastGame}</td>
+                                            <td className="has-text-right">{ this.state.lastGameMoves }</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        */}
+                    </Grid>
+                    <Grid item className={classes.footer}>
+                        <Link
+                            href="https://github.com/XOP/memory-react-2"
+                            variant="body1"
+                            color="inherit"
+                            className={classes.linkInverted}
+                        >
+                            React Memory 2 © 2019
+                        </Link>
+                    </Grid>
+                </Grid>
+            </Fragment>
         );
     }
 }
 
-export default App;
+export default withStyles(styles)(App);

@@ -1,6 +1,10 @@
 import React from 'react';
 import { Component } from 'react';
 
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+
 interface Props {
     heading: string;
     children?: any;
@@ -16,25 +20,31 @@ class Splash extends Component<Props, {}> {
         } = this.props;
 
         return (
-            <section>
-                <div className="section has-text-centered">
-                    <h1 className="title is-2">
-                        {heading}
-                    </h1>
-                    {
-                        text &&
-                        <h2 className="subtitle is-4">
-                            {text}
-                        </h2>
-                    }
-                    {
-                        children &&
-                        <div className="section">
-                            {children}
-                        </div>
-                    }
-                </div>
-            </section>
+            <Paper>
+                <Typography
+                    align="center"
+                    variant="h2"
+                >
+                    {heading}
+                </Typography>
+                {
+                    text &&
+                    <Typography
+                        align="center"
+                        variant="subtitle2"
+                    >
+                        {text}
+                    </Typography>
+                }
+                {
+                    children &&
+                    <section>
+                        <Divider variant="fullWidth" />
+                        {children}
+                        <Divider variant="fullWidth" />
+                    </section>
+                }
+            </Paper>
         );
     }
 }

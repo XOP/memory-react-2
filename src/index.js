@@ -1,21 +1,37 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+
 import App from './components/app';
 import { CardsProvider } from './contexts/cards-context';
 
 import * as serviceWorker from './serviceWorker';
 
-// css framework
-import 'bulma/css/bulma.css';
+const theme = createMuiTheme({
+    palette: {
+        primary: {
+            main: '#40c4ff',
+            light: '#82f7ff',
+            dark: '#0094cc'
+        },
+        secondary: {
+            main: '#ff3d00',
+            light: '#ff7539',
+            dark: '#c30000'
+        },
+        text: {
 
-// custom css
-import './index.css';
+        }
+    }
+});
 
 ReactDOM.render(
-    <CardsProvider>
-        <App />
-    </CardsProvider>,
+    <MuiThemeProvider theme={theme}>
+        <CardsProvider>
+            <App />
+        </CardsProvider>
+    </MuiThemeProvider>,
     document.getElementById('root')
 );
 

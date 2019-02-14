@@ -1,16 +1,16 @@
 import React from 'react';
 import { MouseEvent, Component } from 'react';
 
-import cls from 'classnames';
+import ButtonComponent from '@material-ui/core/Button';
 
 interface Props {
     children: any;
     className?: string;
     onClick?(e: MouseEvent<HTMLElement>): void;
     disabled?: boolean;
-    full?: boolean;
-    size?: boolean;
-    mode?: string;
+    size?: any | string;
+    mode?: any | string;
+    variant?: any | string;
 }
 
 class Button extends Component<Props, {}> {
@@ -30,26 +30,27 @@ class Button extends Component<Props, {}> {
     render() {
         const {
             children,
-            className,
             disabled,
-            full,
             size,
-            mode
+            mode,
+            variant
         } = this.props;
 
         return (
-            <button
-                className={cls('button', className, {
-                    'is-disabled': disabled,
-                    'is-fullwidth': full,
-                    [`is-${size}`]: size,
-                    [`is-${mode}`]: mode
-                })}
+            <ButtonComponent
+                variant={variant}
                 onClick={this.handleClick}
+                size={size}
+                color={mode}
+                disabled={disabled}
             >
                 {children}
-            </button>
+            </ButtonComponent>
         );
+    }
+
+    static defaultProps = {
+        variant: 'contained'
     }
 }
 
