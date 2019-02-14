@@ -17,18 +17,25 @@ const styles = (theme : any) => ({
             height: 'calc(32px + 10vh)'
         },
         [theme.breakpoints.up('sm')]: {
-            width: 'calc(64px + 10vh)',
-            height: 'calc(64px + 10vh)'
+            width: 'calc(48px + 8vh)',
+            height: 'calc(48px + 8vh)'
         }
     },
 
     image: {
-        width: 'calc(64px + 10vh)',
-        height: 'calc(64px + 10vh)'
+        margin: 0,
+        [theme.breakpoints.down('sm')]: {
+            width: 'calc(32px + 10vh)',
+            height: 'calc(32px + 10vh)'
+        },
+        [theme.breakpoints.up('sm')]: {
+            width: 'calc(48px + 8vh)',
+            height: 'calc(48px + 8vh)'
+        }
     },
 
     back: {
-        transition: `all ${theme.transitions.duration.short}ms ${theme.transitions.easing.easeOut}`,
+        transition: `background ${theme.transitions.duration.short}ms ${theme.transitions.easing.easeOut}`,
         background: theme.palette.primary.main,
         padding: '1vh'
     },

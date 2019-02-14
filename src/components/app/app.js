@@ -56,6 +56,10 @@ const styles = theme => ({
         maxWidth: '800px'
     },
 
+    cards: {
+        margin: '0 auto'
+    },
+
     toolbar: {
         padding: `${theme.spacing.unit * 2}px`
     },
@@ -89,7 +93,8 @@ const styles = theme => ({
     },
 
     heroImage: {
-        width: '360px',
+        width: '32vh',
+        maxWidth: '360px',
         [theme.breakpoints.down('sm')]: {
             width: '80%'
         }
@@ -285,11 +290,16 @@ class App extends Component {
     }
 
     renderCards() {
+        const {classes} = this.props;
+
         return (
             <Grid
+                className={classes.cards}
                 container
-                justify="space-between"
-                spacing={32}
+                justify="space-evenly"
+                spacing={24}
+                xs={12}
+                sm={10}
             >
                 {
                     this.props.cards.map((card, idx) => (

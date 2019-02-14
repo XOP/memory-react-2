@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import 'normalize.css/normalize.css';
+
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
 import App from './components/app';
